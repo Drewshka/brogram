@@ -3,7 +3,7 @@ import WorkoutCard from "./WorkoutCard.jsx";
 
 export default function Grid() {
   const isLocked = true;
-  const selectedWorkout = null;
+  const selectedWorkout = 4;
 
   return (
     <div className="training-plan-grid">

@@ -83,3 +83,93 @@ h3,
   line-height: 1rem;
   color: var (--color-link);
 }
+
+.workout-container {
+  grid-column: span 3 / span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.workout-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.exercise-name {
+  grid-column: span 3 / span 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.exercise-name p {
+  font-weight: 400;
+}
+
+.weight-input {
+  grid-column: span 2 / span 2;
+}
+
+.workout-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0 2rem 0;
+  text-align: center;
+}
+
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button.help-icon {
+  pointer-events: none;
+  opacity: 0;
+  padding: 0 0.5rem;
+  color: var(--color-link);
+  border: unset;
+  box-shadow: unset;
+  transform: unset;
+  width: fit-content;
+}
+
+button.help-icon:hover {
+  transform: unset;
+  box-shadow: unset;
+  opacity: 0.7;
+}
+
+.exercise-name:hover button.help-icon {
+  pointer-events: all;
+  opacity: 1;
+}
+
+.exercise-info {
+  margin: auto 0;
+}
+
+.skill-name {
+  text-transform: capitalize;
+}
+
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
