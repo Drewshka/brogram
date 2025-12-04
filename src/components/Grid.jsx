@@ -3,10 +3,10 @@ import WorkoutCard from "./WorkoutCard.jsx";
 
 export default function Grid() {
   const isLocked = true;
-  const selectedWorkout = 0;
+  const selectedWorkout = null;
 
   return (
-    <div className="training-grid-plan">
+    <div className="training-plan-grid">
       {Object.keys(training_plan).map((workout, workoutIndex) => {
         const type =
           workoutIndex % 3 === 0

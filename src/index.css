@@ -1,0 +1,85 @@
+body {
+  padding: 1rem 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+header,
+main,
+footer {
+  width: 100%;
+  max-width: 700px;
+  padding: 1rem;
+  margin: 0 auto;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+header h1 {
+  width: fit-content;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.rule-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.rule-item p:first-of-type {
+  min-width: 60px;
+}
+
+h3,
+.training-plan-grid {
+  padding-top: 2rem;
+}
+
+.training-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.plan-card {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.inactive {
+  position: relative;
+  z-index: 1;
+  cursor: not-allowed;
+}
+
+.locked-card {
+  position: absolute;
+}
+
+.plan-card-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plan-card-header p:first-of-type,
+.plan-card-header i {
+  font-weight: 600;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var (--color-link);
+}
