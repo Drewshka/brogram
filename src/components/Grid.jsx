@@ -1,9 +1,23 @@
+import { useState } from "react";
 import { workoutProgram as training_plan } from "../utils/index.js";
 import WorkoutCard from "./WorkoutCard.jsx";
 
 export default function Grid() {
-  const isLocked = true;
-  const selectedWorkout = 5;
+  // const isLocked = false;
+  const [savedWorkouts, setSavedWorkouts] = useState(null);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const completedWorkouts = [];
+  const isLocked = false;
+
+  function handleSave(index, data) {
+    // save to local storage and modify the saved workouts state
+  }
+
+  function handleComplete(index, data) {
+    // save a workout (modify the completed status)
+    const newObj = { ...data };
+    newObj.isComplete = true;
+  }
 
   return (
     <div className="training-plan-grid">
@@ -38,12 +52,15 @@ export default function Grid() {
               workoutIndex={workoutIndex}
               icon={icon}
               dayNum={dayNum}
+              handleComplete={handleComplete}
+              handleSave={handleSave}
             />
           );
         }
 
         return (
           <button
+            onClick={() => setSelectedWorkout(workoutIndex)}
             className={"card plan-card  " + (isLocked ? "inactive" : "")}
             key={workoutIndex}>
             <div className="plan-card-header">

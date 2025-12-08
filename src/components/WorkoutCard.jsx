@@ -19,6 +19,7 @@ export default function WorkoutCard(props) {
   const [weights, setWeights] = useState(savedWeights || {});
 
   function handleAddWeight(title, weight) {
+    // console.log(title, weight);
     const newObj = {
       ...weights,
       [title]: weight,
@@ -28,11 +29,14 @@ export default function WorkoutCard(props) {
 
   return (
     <div className="workout-container">
-      {/* {showExerciseDescription && (
-                <Modal showExerciseDescription={showExerciseDescription} handleCloseModal={() => {
-                    setShowExerciseDescription(null)
-                }} />
-            )} */}
+      {showExerciseDescription && (
+        <Modal
+          showExerciseDescription={showExerciseDescription}
+          handleCloseModal={() => {
+            setShowExerciseDescription(null);
+          }}
+        />
+      )}
       <div className="workout-card card">
         <div className="plan-card-header">
           <p>Day {dayNum}</p>
