@@ -19,7 +19,7 @@ export default function WorkoutCard(props) {
   const [weights, setWeights] = useState(savedWeights || {});
 
   function handleAddWeight(title, weight) {
-    // console.log(title, weight);
+    console.log(title, weight);
     const newObj = {
       ...weights,
       [title]: weight,

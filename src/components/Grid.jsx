@@ -11,12 +11,27 @@ export default function Grid() {
 
   function handleSave(index, data) {
     // save to local storage and modify the saved workouts state
+    //Checks saved workouts for the day to see if complete
+    //essentially one of the 2 have to be true. If the data isn't complete and we don't have a record of the workout being complete, then will still be false
+    //object will track of every previously saved workout while modifying the current index (workout) that we're doing
+    const newObj = {
+      ...savedWorkouts,
+      [index]: {
+        ...data,
+        isComplete: !!data.isComplete || !!savedWorkouts?.[index]?.isComplete,
+      },
+    };
+    setSavedWorkouts(newObj);
+    //persist local storage data across page loads
+    localStorage.setItem("brogram", JSON.stringify(newObj));
+    setSavedWorkouts(null);
   }
 
   function handleComplete(index, data) {
     // save a workout (modify the completed status)
     const newObj = { ...data };
     newObj.isComplete = true;
+    handleSave(index, newObj);
   }
 
   return (
