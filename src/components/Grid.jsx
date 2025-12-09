@@ -3,10 +3,9 @@ import { workoutProgram as training_plan } from "../utils/index.js";
 import WorkoutCard from "./WorkoutCard.jsx";
 
 export default function Grid() {
-  // const isLocked = false;
   const [savedWorkouts, setSavedWorkouts] = useState(null);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const completedWorkouts = Object.keys(savedWorkouts || {}).map((val) => {
+  const completedWorkouts = Object.keys(savedWorkouts || {}).filter((val) => {
     const entry = savedWorkouts[val];
     return entry.isComplete;
   });
@@ -44,7 +43,7 @@ export default function Grid() {
     if (localStorage.getItem("brogram")) {
       savedData = JSON.parse(localStorage.getItem("brogram"));
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     setSavedWorkouts(savedData);
   }, []);
 
@@ -104,8 +103,9 @@ export default function Grid() {
             key={workoutIndex}>
             <div className="plan-card-header">
               <p>Day {dayNum}</p>
+              {isLocked ? <i className="fa-solid fa-lock"></i> : icon}
             </div>
-            {isLocked ? <i className="fa-solid fa-lock"></i> : icon}
+
             <div className="plan-card-header">
               <h4>
                 <b>{type}</b>
