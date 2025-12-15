@@ -1,17 +1,47 @@
-# React + Vite
+# Push • Pull • Legs Workout Tracker 💪
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple, intuitive workout tracking application built with **React JS** and **Fanta CSS**, designed around the popular **Push → Pull → Legs (PPL)** training split.  
+The app helps users track workouts, stay consistent, and follow a structured strength-training routine.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🌐 Live Demo
 
-## React Compiler
+👉 **Deployed Site:**  
+https://drewshka-brogram.netlify.app/
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 📸 Preview
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# brogram
+> A clean, focused fitness app featuring:
+- Push / Pull / Legs workout views
+- Exercise tracking by training day
+- Minimal, distraction-free UI
+- Responsive layout for desktop and mobile
+
+---
+
+## 🚀 Features
+
+- 🏋️ Push → Pull → Legs workout structure
+- 📅 Easy switching between training days
+- 📝 Track exercises per workout
+- ⚡ Fast, responsive UI with React
+- 🎨 Styled with **Fanta CSS**
+- 📱 Mobile-friendly design
+- 🧠 Simple, intuitive user experience
+
+---
+
+## 🛠️ Built With
+
+- **React JS**
+- **Fanta CSS**
+- **JavaScript (ES6+)**
+- **HTML5**
+
+---
+
+## 📂 Project Structure
+
