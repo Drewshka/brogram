@@ -41,7 +41,4 @@ https://drewshka-brogram.netlify.app/
 - **JavaScript (ES6+)**
 - **HTML5**
 
----
-
-## 📂 Project Structure
 
