@@ -1,15 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { workoutProgram as training_plan } from "../utils/index.js";
 import WorkoutCard from "./WorkoutCard.jsx";
 
 export default function Grid() {
   const [savedWorkouts, setSavedWorkouts] = useState(null);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  const completedWorkouts = Object.keys(savedWorkouts || {}).filter((val) => {
-    const entry = savedWorkouts[val];
-    return entry.isComplete;
-  });
+  // const completedWorkouts = Object.keys(savedWorkouts || {}).filter((val) => {
+  //   const entry = savedWorkouts[val];
+  //   return entry.isComplete;
+  // });
+  const completedWorkouts = useMemo(() => {
+    return Object.keys(savedWorkouts || {}).filter((key) => {
+      return savedWorkouts[key]?.isComplete;
+    });
+  }, [savedWorkouts]);
 
+  //NEW CODE
+  const [workoutHistory, setWorkoutHistory] = useState([]);
+
+  console.log("workoutHistory", workoutHistory);
   function handleSave(index, data) {
     // save to local storage and modify the saved workouts state
     //Checks saved workouts for the day to see if complete
@@ -28,23 +37,51 @@ export default function Grid() {
     setSelectedWorkout(null);
   }
 
-  function handleComplete(index, data) {
-    // save a workout (modify the completed status)
-    const newObj = { ...data };
-    newObj.isComplete = true;
-    handleSave(index, newObj);
+  // function handleComplete(index, data) {
+  //   // save a workout (modify the completed status)
+  //   const newObj = { ...data };
+  //   newObj.isComplete = true;
+  //   handleSave(index, newObj);
+  // }
+
+  // useEffect(() => {
+  //   if (!localStorage) {
+  //     return;
+  //   }
+  //   let savedData = {};
+  //   if (localStorage.getItem("brogram")) {
+  //     savedData = JSON.parse(localStorage.getItem("brogram"));
+  //   }
+
+  //   setSavedWorkouts(savedData);
+  // }, []);
+
+  //NEW CODE
+  function handleComplete(index, completedWorkout) {
+    // 1. Mark workout as complete (existing behavior)
+    handleSave(index, {
+      ...completedWorkout,
+      isComplete: true,
+    });
+
+    // 2. Append to workout history
+    setWorkoutHistory((prev) => {
+      const updated = [...prev, completedWorkout];
+      localStorage.setItem("workoutHistory", JSON.stringify(updated));
+      return updated;
+    });
   }
 
   useEffect(() => {
-    if (!localStorage) {
-      return;
-    }
-    let savedData = {};
-    if (localStorage.getItem("brogram")) {
-      savedData = JSON.parse(localStorage.getItem("brogram"));
-    }
+    if (!localStorage) return;
 
-    setSavedWorkouts(savedData);
+    const savedWorkoutsData = JSON.parse(localStorage.getItem("brogram")) || {};
+
+    const historyData =
+      JSON.parse(localStorage.getItem("workoutHistory")) || [];
+
+    setSavedWorkouts(savedWorkoutsData);
+    setWorkoutHistory(historyData);
   }, []);
 
   return (

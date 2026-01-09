@@ -16,16 +16,21 @@ export default function WorkoutCard(props) {
 
   const { warmup, workout } = trainingPlan || {};
   const [showExerciseDescription, setShowExerciseDescription] = useState(null);
-  const [weights, setWeights] = useState(savedWeights || {});
+  // const [weights, setWeights] = useState(savedWeights || {});
+  const [exerciseWeights, setExerciseWeights] = useState(savedWeights || {});
 
   function handleAddWeight(title, weight) {
     console.log(title, weight);
     const newObj = {
-      ...weights,
+      ...exerciseWeights,
       [title]: weight,
     };
-    setWeights(newObj);
+    setExerciseWeights(newObj);
   }
+
+  const isComplete = workout.every(
+    (ex) => exerciseWeights[ex.name] && Number(exerciseWeights[ex.name]) > 0
+  );
 
   return (
     <div className="workout-container">
@@ -110,7 +115,7 @@ export default function WorkoutCard(props) {
               <p className="exercise-info">{workoutExercise.sets}</p>
               <p className="exercise-info">{workoutExercise.reps}</p>
               <input
-                value={weights[workoutExercise.name] || ""}
+                value={exerciseWeights[workoutExercise.name] || ""}
                 onChange={(e) => {
                   handleAddWeight(workoutExercise.name, e.target.value);
                 }}
@@ -125,15 +130,29 @@ export default function WorkoutCard(props) {
       <div className="workout-buttons">
         <button
           onClick={() => {
-            handleSave(workoutIndex, { weights });
+            handleSave(workoutIndex, { exerciseWeights });
           }}>
           Save & Exit
         </button>
         <button
           onClick={() => {
-            handleComplete(workoutIndex, { weights });
+            //OLD CODE
+            // handleComplete(workoutIndex, { weights });
+            //NEW CODE: I kept the UI simple but normalized the data so I could support future analytics like volume and PR tracking without rewriting the input flow.
+            handleComplete(workoutIndex, {
+              date: new Date().toISOString(),
+              split: type.toLowerCase(),
+              exercises: workout.map((exercise) => ({
+                name: exercise.name,
+                sets: Array.from({ length: exercise.sets }, () => ({
+                  reps: exercise.reps,
+                  weight: Number(exerciseWeights[exercise.name]),
+                })),
+              })),
+            });
           }}
-          disabled={Object.keys(weights).length !== workout.length}>
+          // disabled={Object.keys(exerciseWeights).length !== workout.length}
+          disabled={!isComplete}>
           Complete
         </button>
       </div>
