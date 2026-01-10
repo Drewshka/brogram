@@ -51,14 +51,14 @@ import {
 } from "../utils/workoutAnalytics";
 
 export default function Analytics({ workoutHistory }) {
-  const exerciseOptions = useMemo(() => {
-    const set = new Set();
-    workoutHistory.forEach((workout) => {
-      if (!workout?.exercises) return;
-      workout.exercises.forEach((ex) => set.add(ex.name));
-    });
-    return Array.from(set);
-  }, [workoutHistory]);
+  //   const exerciseOptions = useMemo(() => {
+  //     const set = new Set();
+  //     workoutHistory.forEach((workout) => {
+  //       if (!workout?.exercises) return;
+  //       workout.exercises.forEach((ex) => set.add(ex.name));
+  //     });
+  //     return Array.from(set);
+  //   }, [workoutHistory]);
 
   //   const [selectedExercise, setSelectedExercise] = useState(
   //     exerciseOptions[0] || ""
@@ -75,7 +75,7 @@ export default function Analytics({ workoutHistory }) {
 
   const latest = chartData[chartData.length - 1];
   const best = Math.max(...chartData.map((d) => d.maxWeight));
-  const hasMultiplePoints = chartData.length > 1;
+  //   const hasMultiplePoints = chartData.length > 1;
 
   const groupedExercises = useMemo(() => {
     const groups = {
@@ -209,6 +209,15 @@ export default function Analytics({ workoutHistory }) {
             />
             <YAxis />
             <Tooltip
+              contentStyle={{
+                borderRadius: "12px",
+                border: "none",
+                backgroundColor: "#111",
+                padding: "10px 14px",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.3)",
+              }}
+              labelStyle={{ color: "#aaa" }}
+              itemStyle={{ color: "#4ade80" }}
               isAnimationActive={false}
               cursor={{ strokeDasharray: "3 3" }}
               formatter={(value, name) => {
@@ -232,15 +241,19 @@ export default function Analytics({ workoutHistory }) {
 
       {/* Stats */}
       {latest && (
-        <div className="analytics-stats">
+        <div
+          className={`analytics-stats ${chartData.length === 1 ? "single" : ""}`}>
           <div>
             <h4>Latest</h4>
             <p>{latest.maxWeight} lbs</p>
           </div>
-          <div>
-            <h4>Best</h4>
-            <p>{best} lbs</p>
-          </div>
+
+          {chartData.length > 1 && (
+            <div>
+              <h4>Best</h4>
+              <p>{best} lbs</p>
+            </div>
+          )}
         </div>
       )}
     </div>
