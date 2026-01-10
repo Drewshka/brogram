@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { workoutProgram as training_plan } from "../utils/index.js";
 import WorkoutCard from "./WorkoutCard.jsx";
+import Analytics from "./Analytics.jsx";
 
 export default function Grid() {
   const [savedWorkouts, setSavedWorkouts] = useState(null);
@@ -19,20 +20,43 @@ export default function Grid() {
   const [workoutHistory, setWorkoutHistory] = useState([]);
 
   console.log("workoutHistory", workoutHistory);
+  // function handleSave(index, data) {
+  //   // save to local storage and modify the saved workouts state
+  //   //Checks saved workouts for the day to see if complete
+  //   //essentially one of the 2 have to be true. If the data isn't complete and we don't have a record of the workout being complete, then will still be false
+  //   //object will track of every previously saved workout while modifying the current index (workout) that we're doing
+  //   const newObj = {
+  //     ...savedWorkouts,
+  //     [index]: {
+  //       ...data,
+  //       isComplete: !!data.isComplete || !!savedWorkouts?.[index]?.isComplete,
+  //     },
+  //   };
+  //   setSavedWorkouts(newObj);
+  //   //persist local storage data across page loads
+  //   localStorage.setItem("brogram", JSON.stringify(newObj));
+  //   setSelectedWorkout(null);
+  // }
   function handleSave(index, data) {
-    // save to local storage and modify the saved workouts state
-    //Checks saved workouts for the day to see if complete
-    //essentially one of the 2 have to be true. If the data isn't complete and we don't have a record of the workout being complete, then will still be false
-    //object will track of every previously saved workout while modifying the current index (workout) that we're doing
+    const prevWorkout = savedWorkouts?.[index] || {};
+
     const newObj = {
       ...savedWorkouts,
       [index]: {
-        ...data,
-        isComplete: !!data.isComplete || !!savedWorkouts?.[index]?.isComplete,
+        ...prevWorkout,
+
+        // merge weights instead of replacing
+        weights: {
+          ...(prevWorkout.weights || {}),
+          ...(data.weights || {}),
+        },
+
+        // once complete, always complete
+        isComplete: prevWorkout.isComplete || data.isComplete || false,
       },
     };
+
     setSavedWorkouts(newObj);
-    //persist local storage data across page loads
     localStorage.setItem("brogram", JSON.stringify(newObj));
     setSelectedWorkout(null);
   }
@@ -57,16 +81,34 @@ export default function Grid() {
   // }, []);
 
   //NEW CODE
-  function handleComplete(index, completedWorkout) {
-    // 1. Mark workout as complete (existing behavior)
+  // function handleComplete(index, completedWorkout) {
+  //   // 1. Mark workout as complete (existing behavior)
+  //   handleSave(index, {
+  //     ...completedWorkout,
+  //     isComplete: true,
+  //   });
+
+  //   // 2. Append to workout history
+  //   setWorkoutHistory((prev) => {
+  //     const updated = [...prev, completedWorkout];
+  //     localStorage.setItem("workoutHistory", JSON.stringify(updated));
+  //     return updated;
+  //   });
+  // }
+
+  //NEW CODE
+  function handleComplete(index, data) {
+    const { weights, workoutData } = data;
+
+    // 1. Save UI state (for inputs)
     handleSave(index, {
-      ...completedWorkout,
+      weights,
       isComplete: true,
     });
 
-    // 2. Append to workout history
+    // 2. Append ONLY analytics data
     setWorkoutHistory((prev) => {
-      const updated = [...prev, completedWorkout];
+      const updated = [...prev, workoutData];
       localStorage.setItem("workoutHistory", JSON.stringify(updated));
       return updated;
     });
@@ -85,72 +127,77 @@ export default function Grid() {
   }, []);
 
   return (
-    <div className="training-plan-grid">
-      {Object.keys(training_plan).map((workout, workoutIndex) => {
-        const isLocked =
-          workoutIndex === 0
-            ? false
-            : !completedWorkouts.includes(`${workoutIndex - 1}`);
-        console.log(workoutIndex, isLocked);
+    <>
+      {workoutHistory.length > 0 && (
+        <Analytics workoutHistory={workoutHistory} />
+      )}
+      <div className="training-plan-grid">
+        {Object.keys(training_plan).map((workout, workoutIndex) => {
+          const isLocked =
+            workoutIndex === 0
+              ? false
+              : !completedWorkouts.includes(`${workoutIndex - 1}`);
+          console.log(workoutIndex, isLocked);
 
-        const type =
-          workoutIndex % 3 === 0
-            ? "Push"
-            : workoutIndex % 3 === 1
-              ? "Pull"
-              : "Legs";
+          const type =
+            workoutIndex % 3 === 0
+              ? "Push"
+              : workoutIndex % 3 === 1
+                ? "Pull"
+                : "Legs";
 
-        const trainingPlan = training_plan[workoutIndex];
-        const dayNum =
-          workoutIndex / 8 <= 1 ? "0" + (workoutIndex + 1) : workoutIndex + 1;
-        const icon =
-          workoutIndex % 3 === 0 ? (
-            <i className="fa-solid fa-dumbbell"></i>
-          ) : workoutIndex % 3 === 1 ? (
-            <i className="fa-solid fa-weight-hanging"></i>
-          ) : (
-            <i className="fa-solid fa-bolt"></i>
-          );
+          const trainingPlan = training_plan[workoutIndex];
+          const dayNum =
+            workoutIndex / 8 <= 1 ? "0" + (workoutIndex + 1) : workoutIndex + 1;
+          const icon =
+            workoutIndex % 3 === 0 ? (
+              <i className="fa-solid fa-dumbbell"></i>
+            ) : workoutIndex % 3 === 1 ? (
+              <i className="fa-solid fa-weight-hanging"></i>
+            ) : (
+              <i className="fa-solid fa-bolt"></i>
+            );
 
-        if (workoutIndex === selectedWorkout) {
+          if (workoutIndex === selectedWorkout) {
+            return (
+              <WorkoutCard
+                savedWeights={savedWorkouts?.[workoutIndex]?.weights}
+                key={workoutIndex}
+                trainingPlan={trainingPlan}
+                type={type}
+                workoutIndex={workoutIndex}
+                icon={icon}
+                dayNum={dayNum}
+                handleComplete={handleComplete}
+                handleSave={handleSave}
+              />
+            );
+          }
+
           return (
-            <WorkoutCard
-              savedWeights={savedWorkouts?.[workoutIndex]?.weights}
-              key={workoutIndex}
-              trainingPlan={trainingPlan}
-              type={type}
-              workoutIndex={workoutIndex}
-              icon={icon}
-              dayNum={dayNum}
-              handleComplete={handleComplete}
-              handleSave={handleSave}
-            />
+            <button
+              onClick={() => {
+                if (isLocked) {
+                  return;
+                }
+                setSelectedWorkout(workoutIndex);
+              }}
+              className={"card plan-card  " + (isLocked ? "inactive" : "")}
+              key={workoutIndex}>
+              <div className="plan-card-header">
+                <p>Day {dayNum}</p>
+                {isLocked ? <i className="fa-solid fa-lock"></i> : icon}
+              </div>
+
+              <div className="plan-card-header">
+                <h4>
+                  <b>{type}</b>
+                </h4>
+              </div>
+            </button>
           );
-        }
-
-        return (
-          <button
-            onClick={() => {
-              if (isLocked) {
-                return;
-              }
-              setSelectedWorkout(workoutIndex);
-            }}
-            className={"card plan-card  " + (isLocked ? "inactive" : "")}
-            key={workoutIndex}>
-            <div className="plan-card-header">
-              <p>Day {dayNum}</p>
-              {isLocked ? <i className="fa-solid fa-lock"></i> : icon}
-            </div>
-
-            <div className="plan-card-header">
-              <h4>
-                <b>{type}</b>
-              </h4>
-            </div>
-          </button>
-        );
-      })}
-    </div>
+        })}
+      </div>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import { exerciseDescriptions } from "../utils";
 
@@ -18,6 +18,7 @@ export default function WorkoutCard(props) {
   const [showExerciseDescription, setShowExerciseDescription] = useState(null);
   // const [weights, setWeights] = useState(savedWeights || {});
   const [exerciseWeights, setExerciseWeights] = useState(savedWeights || {});
+  // const workoutDate = new Date(workout.date);
 
   function handleAddWeight(title, weight) {
     console.log(title, weight);
@@ -31,6 +32,10 @@ export default function WorkoutCard(props) {
   const isComplete = workout.every(
     (ex) => exerciseWeights[ex.name] && Number(exerciseWeights[ex.name]) > 0
   );
+
+  useEffect(() => {
+    setExerciseWeights(savedWeights || {});
+  }, [savedWeights]);
 
   return (
     <div className="workout-container">
@@ -130,7 +135,8 @@ export default function WorkoutCard(props) {
       <div className="workout-buttons">
         <button
           onClick={() => {
-            handleSave(workoutIndex, { exerciseWeights });
+            // handleSave(workoutIndex, { exerciseWeights });
+            handleSave(workoutIndex, { weights: exerciseWeights });
           }}>
           Save & Exit
         </button>
@@ -139,16 +145,30 @@ export default function WorkoutCard(props) {
             //OLD CODE
             // handleComplete(workoutIndex, { weights });
             //NEW CODE: I kept the UI simple but normalized the data so I could support future analytics like volume and PR tracking without rewriting the input flow.
+            // handleComplete(workoutIndex, {
+            //   date: new Date().toISOString(),
+            //   split: type.toLowerCase(),
+            //   exercises: workout.map((exercise) => ({
+            //     name: exercise.name,
+            //     sets: Array.from({ length: exercise.sets }, () => ({
+            //       reps: exercise.reps,
+            //       weight: Number(exerciseWeights[exercise.name]),
+            //     })),
+            //   })),
+            // });
             handleComplete(workoutIndex, {
-              date: new Date().toISOString(),
-              split: type.toLowerCase(),
-              exercises: workout.map((exercise) => ({
-                name: exercise.name,
-                sets: Array.from({ length: exercise.sets }, () => ({
-                  reps: exercise.reps,
-                  weight: Number(exerciseWeights[exercise.name]),
+              weights: exerciseWeights,
+              workoutData: {
+                date: new Date().toISOString(),
+                split: type.toLowerCase(),
+                exercises: workout.map((exercise) => ({
+                  name: exercise.name,
+                  sets: Array.from({ length: exercise.sets }, () => ({
+                    reps: exercise.reps,
+                    weight: Number(exerciseWeights[exercise.name]),
+                  })),
                 })),
-              })),
+              },
             });
           }}
           // disabled={Object.keys(exerciseWeights).length !== workout.length}
