@@ -60,9 +60,10 @@ export default function Analytics({ workoutHistory }) {
     return Array.from(set);
   }, [workoutHistory]);
 
-  const [selectedExercise, setSelectedExercise] = useState(
-    exerciseOptions[0] || ""
-  );
+  //   const [selectedExercise, setSelectedExercise] = useState(
+  //     exerciseOptions[0] || ""
+  //   );
+  const [selectedExercise, setSelectedExercise] = useState("");
 
   const chartData = useMemo(() => {
     if (!selectedExercise) return [];
@@ -74,6 +75,29 @@ export default function Analytics({ workoutHistory }) {
 
   const latest = chartData[chartData.length - 1];
   const best = Math.max(...chartData.map((d) => d.maxWeight));
+  const hasMultiplePoints = chartData.length > 1;
+
+  const groupedExercises = useMemo(() => {
+    const groups = {
+      push: new Set(),
+      pull: new Set(),
+      legs: new Set(),
+    };
+
+    workoutHistory.forEach((workout) => {
+      if (!workout?.exercises || !workout.split) return;
+
+      workout.exercises.forEach((ex) => {
+        groups[workout.split]?.add(ex.name);
+      });
+    });
+
+    return {
+      push: Array.from(groups.push),
+      pull: Array.from(groups.pull),
+      legs: Array.from(groups.legs),
+    };
+  }, [workoutHistory]);
 
   return (
     <div className="analytics-card">
@@ -87,7 +111,7 @@ export default function Analytics({ workoutHistory }) {
       <div className="analytics-controls">
         <label>
           Exercise
-          <select
+          {/* <select
             value={selectedExercise}
             onChange={(e) => setSelectedExercise(e.target.value)}>
             {exerciseOptions.map((ex) => (
@@ -95,6 +119,43 @@ export default function Analytics({ workoutHistory }) {
                 {ex}
               </option>
             ))}
+          </select> */}
+          <select
+            value={selectedExercise}
+            onChange={(e) => setSelectedExercise(e.target.value)}>
+            <option value="" disabled>
+              Select exercise
+            </option>
+
+            {groupedExercises.push.length > 0 && (
+              <optgroup label="Push">
+                {groupedExercises.push.map((ex) => (
+                  <option key={ex} value={ex}>
+                    {ex}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedExercises.pull.length > 0 && (
+              <optgroup label="Pull">
+                {groupedExercises.pull.map((ex) => (
+                  <option key={ex} value={ex}>
+                    {ex}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedExercises.legs.length > 0 && (
+              <optgroup label="Legs">
+                {groupedExercises.legs.map((ex) => (
+                  <option key={ex} value={ex}>
+                    {ex}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </label>
       </div>
@@ -105,18 +166,66 @@ export default function Analytics({ workoutHistory }) {
           <LineChart data={chartData}>
             <Line
               dataKey="maxWeight"
+              stroke="#4ade80"
               strokeWidth={2}
-              dot={({ payload }) =>
-                payload.isPR ? (
-                  <circle r={5} fill="#4ade80" />
-                ) : (
-                  <circle r={3} fill="#888" />
-                )
+              strokeOpacity={chartData.length > 1 ? 1 : 0} // 👈 KEY FIX
+              dot={({ cx, cy, payload }) => {
+                if (cx == null || cy == null || !payload) return null;
+
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={4}
+                    fill={payload.isPR ? "#4ade80" : "#888"}
+                  />
+                );
+              }}
+              activeDot={({ cx, cy, payload }) => {
+                if (cx == null || cy == null || !payload) return null;
+
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={6}
+                    fill={payload.isPR ? "#4ade80" : "#888"}
+                    stroke="#000"
+                    strokeWidth={1}
+                  />
+                );
+              }}
+              isAnimationActive={false}
+            />
+
+            <XAxis
+              dataKey="date"
+              tickFormatter={(iso) =>
+                new Date(iso).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })
               }
             />
-            <XAxis dataKey="date" />
             <YAxis />
-            <Tooltip />
+            <Tooltip
+              isAnimationActive={false}
+              cursor={{ strokeDasharray: "3 3" }}
+              formatter={(value, name) => {
+                if (name === "maxWeight") {
+                  return [`${value} lbs`, "Max Weight"];
+                }
+                return [value, name];
+              }}
+              labelFormatter={(iso) =>
+                new Date(iso).toLocaleDateString(undefined, {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })
+              }
+            />
           </LineChart>
         </ResponsiveContainer>
       </div>
