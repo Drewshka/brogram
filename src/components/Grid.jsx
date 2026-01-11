@@ -6,10 +6,6 @@ import Analytics from "./Analytics.jsx";
 export default function Grid() {
   const [savedWorkouts, setSavedWorkouts] = useState(null);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
-  // const completedWorkouts = Object.keys(savedWorkouts || {}).filter((val) => {
-  //   const entry = savedWorkouts[val];
-  //   return entry.isComplete;
-  // });
   const completedWorkouts = useMemo(() => {
     return Object.keys(savedWorkouts || {}).filter((key) => {
       return savedWorkouts[key]?.isComplete;
@@ -18,27 +14,19 @@ export default function Grid() {
 
   //NEW CODE
   const [workoutHistory, setWorkoutHistory] = useState([]);
+  const TOTAL_WORKOUTS = Object.keys(training_plan).length;
+  const isProgramComplete = completedWorkouts.length === TOTAL_WORKOUTS;
+
+  const cycle = JSON.parse(localStorage.getItem("cycle")) || 1;
 
   console.log("workoutHistory", workoutHistory);
-  // function handleSave(index, data) {
-  //   // save to local storage and modify the saved workouts state
-  //   //Checks saved workouts for the day to see if complete
-  //   //essentially one of the 2 have to be true. If the data isn't complete and we don't have a record of the workout being complete, then will still be false
-  //   //object will track of every previously saved workout while modifying the current index (workout) that we're doing
-  //   const newObj = {
-  //     ...savedWorkouts,
-  //     [index]: {
-  //       ...data,
-  //       isComplete: !!data.isComplete || !!savedWorkouts?.[index]?.isComplete,
-  //     },
-  //   };
-  //   setSavedWorkouts(newObj);
-  //   //persist local storage data across page loads
-  //   localStorage.setItem("brogram", JSON.stringify(newObj));
-  //   setSelectedWorkout(null);
-  // }
+
   function handleSave(index, data) {
     const prevWorkout = savedWorkouts?.[index] || {};
+    // save to local storage and modify the saved workouts state
+    //Checks saved workouts for the day to see if complete
+    //essentially one of the 2 have to be true. If the data isn't complete and we don't have a record of the workout being complete, then will still be false
+    //object will track of every previously saved workout while modifying the current index (workout) that we're doing
 
     const newObj = {
       ...savedWorkouts,
@@ -50,7 +38,6 @@ export default function Grid() {
           ...(prevWorkout.weights || {}),
           ...(data.weights || {}),
         },
-
         // once complete, always complete
         isComplete: prevWorkout.isComplete || data.isComplete || false,
       },
@@ -61,69 +48,75 @@ export default function Grid() {
     setSelectedWorkout(null);
   }
 
-  // function handleComplete(index, data) {
-  //   // save a workout (modify the completed status)
-  //   const newObj = { ...data };
-  //   newObj.isComplete = true;
-  //   handleSave(index, newObj);
-  // }
-
-  // useEffect(() => {
-  //   if (!localStorage) {
-  //     return;
-  //   }
-  //   let savedData = {};
-  //   if (localStorage.getItem("brogram")) {
-  //     savedData = JSON.parse(localStorage.getItem("brogram"));
-  //   }
-
-  //   setSavedWorkouts(savedData);
-  // }, []);
-
-  //NEW CODE
-  // function handleComplete(index, completedWorkout) {
-  //   // 1. Mark workout as complete (existing behavior)
-  //   handleSave(index, {
-  //     ...completedWorkout,
-  //     isComplete: true,
-  //   });
-
-  //   // 2. Append to workout history
-  //   setWorkoutHistory((prev) => {
-  //     const updated = [...prev, completedWorkout];
-  //     localStorage.setItem("workoutHistory", JSON.stringify(updated));
-  //     return updated;
-  //   });
-  // }
-
   //NEW CODE
   function handleComplete(index, data) {
-    const { weights, workoutData } = data;
+    if (!data?.weights || Object.keys(data.weights).length === 0) {
+      console.warn("Completing workout with no saved weights", data);
+    }
 
-    // 1. Save UI state (for inputs)
+    if (!data?.exercises?.length) {
+      console.warn("Workout saved without exercises", data);
+      return; // optional: prevents corrupt analytics data
+    }
+
+    const cycle = JSON.parse(localStorage.getItem("cycle")) || 1;
+
+    // 1. Save UI state
     handleSave(index, {
-      weights,
+      weights: data.weights,
       isComplete: true,
     });
 
-    // 2. Append ONLY analytics data
+    // 2. Save analytics entry WITH cycle
     setWorkoutHistory((prev) => {
-      const updated = [...prev, workoutData];
+      const updated = [
+        ...prev,
+        {
+          ...data,
+          cycle,
+        },
+      ];
       localStorage.setItem("workoutHistory", JSON.stringify(updated));
       return updated;
     });
   }
+
+  const handleResetProgram = () => {
+    const currentCycle = JSON.parse(localStorage.getItem("cycle")) || 1;
+    const nextCycle = currentCycle + 1;
+
+    // 1. Update cycle
+    localStorage.setItem("cycle", JSON.stringify(nextCycle));
+
+    // 2. Clear UI progress
+    localStorage.removeItem("brogram");
+    setSavedWorkouts({});
+
+    // 3. Reset selection
+    setSelectedWorkout(null);
+
+    // 3. Scroll back to Day 1
+    setTimeout(() => {
+      document.querySelector(".training-plan-grid")?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }, 100);
+  };
 
   useEffect(() => {
     if (!localStorage) return;
 
     const savedWorkoutsData = JSON.parse(localStorage.getItem("brogram")) || {};
 
-    const historyData =
-      JSON.parse(localStorage.getItem("workoutHistory")) || [];
+    const rawHistory = JSON.parse(localStorage.getItem("workoutHistory")) || [];
+
+    const normalizedHistory = rawHistory.map((w) => ({
+      ...w,
+      cycle: w.cycle ?? 1, // 👈 DEFAULT OLD DATA TO CYCLE 1
+    }));
 
     setSavedWorkouts(savedWorkoutsData);
-    setWorkoutHistory(historyData);
+    setWorkoutHistory(normalizedHistory);
   }, []);
 
   return (
@@ -131,6 +124,13 @@ export default function Grid() {
       {workoutHistory.length > 0 && (
         <Analytics workoutHistory={workoutHistory} />
       )}
+      {isProgramComplete && (
+        <div className="program-reset">
+          <p>🎉 Program complete! Ready to start again?</p>
+          <button onClick={handleResetProgram}>Reset Program</button>
+        </div>
+      )}
+
       <div className="training-plan-grid">
         {Object.keys(training_plan).map((workout, workoutIndex) => {
           const isLocked =
@@ -168,6 +168,7 @@ export default function Grid() {
                 workoutIndex={workoutIndex}
                 icon={icon}
                 dayNum={dayNum}
+                cycle={cycle}
                 handleComplete={handleComplete}
                 handleSave={handleSave}
               />

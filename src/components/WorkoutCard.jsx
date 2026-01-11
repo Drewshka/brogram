@@ -12,13 +12,12 @@ export default function WorkoutCard(props) {
     savedWeights,
     handleSave,
     handleComplete,
+    cycle,
   } = props;
 
   const { warmup, workout } = trainingPlan || {};
   const [showExerciseDescription, setShowExerciseDescription] = useState(null);
-  // const [weights, setWeights] = useState(savedWeights || {});
   const [exerciseWeights, setExerciseWeights] = useState(savedWeights || {});
-  // const workoutDate = new Date(workout.date);
 
   function handleAddWeight(title, weight) {
     console.log(title, weight);
@@ -135,43 +134,27 @@ export default function WorkoutCard(props) {
       <div className="workout-buttons">
         <button
           onClick={() => {
-            // handleSave(workoutIndex, { exerciseWeights });
             handleSave(workoutIndex, { weights: exerciseWeights });
           }}>
           Save & Exit
         </button>
         <button
           onClick={() => {
-            //OLD CODE
-            // handleComplete(workoutIndex, { weights });
-            //NEW CODE: I kept the UI simple but normalized the data so I could support future analytics like volume and PR tracking without rewriting the input flow.
-            // handleComplete(workoutIndex, {
-            //   date: new Date().toISOString(),
-            //   split: type.toLowerCase(),
-            //   exercises: workout.map((exercise) => ({
-            //     name: exercise.name,
-            //     sets: Array.from({ length: exercise.sets }, () => ({
-            //       reps: exercise.reps,
-            //       weight: Number(exerciseWeights[exercise.name]),
-            //     })),
-            //   })),
-            // });
             handleComplete(workoutIndex, {
+              id: crypto.randomUUID(), // 👈 REQUIRED
+              date: new Date().toISOString(),
+              split: type.toLowerCase(),
+              cycle,
               weights: exerciseWeights,
-              workoutData: {
-                date: new Date().toISOString(),
-                split: type.toLowerCase(),
-                exercises: workout.map((exercise) => ({
-                  name: exercise.name,
-                  sets: Array.from({ length: exercise.sets }, () => ({
-                    reps: exercise.reps,
-                    weight: Number(exerciseWeights[exercise.name]),
-                  })),
+              exercises: workout.map((exercise) => ({
+                name: exercise.name,
+                sets: Array.from({ length: exercise.sets }, () => ({
+                  reps: exercise.reps,
+                  weight: Number(exerciseWeights[exercise.name]),
                 })),
-              },
+              })),
             });
           }}
-          // disabled={Object.keys(exerciseWeights).length !== workout.length}
           disabled={!isComplete}>
           Complete
         </button>

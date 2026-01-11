@@ -1,40 +1,4 @@
-// import { useMemo } from "react";
-// import {
-//   getExerciseEntries,
-//   getMaxWeightByDate,
-//   detectPRs,
-// } from "../utils/workoutAnalytics";
-// import { LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
-
-// export default function Analytics({ workoutHistory }) {
-//   const exerciseName = "Barbell squat"; // hardcode for now
-
-//   const data = useMemo(() => {
-//     const entries = getExerciseEntries(workoutHistory, exerciseName);
-//     const maxData = getMaxWeightByDate(entries);
-//     return detectPRs(maxData);
-//   }, [workoutHistory]);
-
-//   return (
-//     <div>
-//       <h2>{exerciseName} Progress</h2>
-//       {data.map((point) => (
-//         <div key={point.date}>
-//           {point.date} — {point.maxWeight} lbs
-//           {point.isPR && " 🏆"}
-//         </div>
-//       ))}
-//       <LineChart width={500} height={300} data={data}>
-//         <Line dataKey="maxWeight" />
-//         <XAxis dataKey="date" />
-//         <YAxis />
-//         <Tooltip />
-//       </LineChart>
-//     </div>
-//   );
-// }
-
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -51,44 +15,57 @@ import {
 } from "../utils/workoutAnalytics";
 
 export default function Analytics({ workoutHistory }) {
-  //   const exerciseOptions = useMemo(() => {
-  //     const set = new Set();
-  //     workoutHistory.forEach((workout) => {
-  //       if (!workout?.exercises) return;
-  //       workout.exercises.forEach((ex) => set.add(ex.name));
-  //     });
-  //     return Array.from(set);
-  //   }, [workoutHistory]);
-
-  //   const [selectedExercise, setSelectedExercise] = useState(
-  //     exerciseOptions[0] || ""
-  //   );
   const [selectedExercise, setSelectedExercise] = useState("");
+  const [selectedCycle, setSelectedCycle] = useState(null);
+
+  const currentCycle = JSON.parse(localStorage.getItem("cycle")) || 1;
+
+  useEffect(() => {
+    console.log("ANALYTICS workoutHistory", workoutHistory);
+  }, [workoutHistory]);
+
+  const availableCycles = useMemo(() => {
+    const set = new Set();
+    workoutHistory.forEach((w) => {
+      if (w?.cycle) set.add(w.cycle);
+    });
+    return Array.from(set).sort((a, b) => b - a);
+  }, [workoutHistory]);
+
+  useEffect(() => {
+    if (availableCycles.length && selectedCycle === null) {
+      setSelectedCycle(availableCycles[0]);
+    }
+  }, [availableCycles, selectedCycle]);
 
   const chartData = useMemo(() => {
-    if (!selectedExercise) return [];
+    if (!selectedExercise || !selectedCycle) return [];
 
-    const entries = getExerciseEntries(workoutHistory, selectedExercise);
+    const filteredHistory = workoutHistory.filter(
+      (w) => (w.cycle ?? 1) === selectedCycle
+    );
+
+    const entries = getExerciseEntries(filteredHistory, selectedExercise);
+
     const maxData = getMaxWeightByDate(entries);
     return detectPRs(maxData);
-  }, [workoutHistory, selectedExercise]);
+  }, [workoutHistory, selectedExercise, selectedCycle]);
 
   const latest = chartData[chartData.length - 1];
   const best = Math.max(...chartData.map((d) => d.maxWeight));
-  //   const hasMultiplePoints = chartData.length > 1;
 
   const groupedExercises = useMemo(() => {
     const groups = {
       push: new Set(),
       pull: new Set(),
       legs: new Set(),
+      other: new Set(),
     };
 
     workoutHistory.forEach((workout) => {
-      if (!workout?.exercises || !workout.split) return;
-
-      workout.exercises.forEach((ex) => {
-        groups[workout.split]?.add(ex.name);
+      workout?.exercises?.forEach((ex) => {
+        const split = workout.split ?? "other";
+        groups[split]?.add(ex.name);
       });
     });
 
@@ -96,8 +73,24 @@ export default function Analytics({ workoutHistory }) {
       push: Array.from(groups.push),
       pull: Array.from(groups.pull),
       legs: Array.from(groups.legs),
+      other: Array.from(groups.other),
     };
   }, [workoutHistory]);
+
+  useEffect(() => {
+    if (!selectedExercise) {
+      const allExercises = [
+        ...groupedExercises.push,
+        ...groupedExercises.pull,
+        ...groupedExercises.legs,
+        ...groupedExercises.other,
+      ];
+
+      if (allExercises.length) {
+        setSelectedExercise(allExercises[0]);
+      }
+    }
+  }, [groupedExercises, selectedExercise]);
 
   return (
     <div className="analytics-card">
@@ -110,16 +103,30 @@ export default function Analytics({ workoutHistory }) {
       {/* Controls */}
       <div className="analytics-controls">
         <label>
-          Exercise
+          Cycle
           {/* <select
-            value={selectedExercise}
-            onChange={(e) => setSelectedExercise(e.target.value)}>
-            {exerciseOptions.map((ex) => (
-              <option key={ex} value={ex}>
-                {ex}
+            value={selectedCycle ?? ""}
+            onChange={(e) => setSelectedCycle(Number(e.target.value))}>
+            {availableCycles.map((cycle) => (
+              <option key={cycle} value={cycle}>
+                Cycle {cycle}
               </option>
             ))}
           </select> */}
+          <select
+            value={selectedCycle ?? ""}
+            onChange={(e) => setSelectedCycle(Number(e.target.value))}>
+            {availableCycles.map((cycle) => (
+              <option key={cycle} value={cycle}>
+                Cycle {cycle}
+                {cycle === currentCycle ? " (Current)" : " (Completed)"}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Exercise
           <select
             value={selectedExercise}
             onChange={(e) => setSelectedExercise(e.target.value)}>
@@ -150,6 +157,16 @@ export default function Analytics({ workoutHistory }) {
             {groupedExercises.legs.length > 0 && (
               <optgroup label="Legs">
                 {groupedExercises.legs.map((ex) => (
+                  <option key={ex} value={ex}>
+                    {ex}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {groupedExercises.other.length > 0 && (
+              <optgroup label="Other">
+                {groupedExercises.other.map((ex) => (
                   <option key={ex} value={ex}>
                     {ex}
                   </option>
@@ -237,6 +254,14 @@ export default function Analytics({ workoutHistory }) {
             />
           </LineChart>
         </ResponsiveContainer>
+        {/* <button
+          onClick={() => {
+            localStorage.clear();
+            window.location.reload();
+          }}
+          style={{ marginTop: 12 }}>
+          Reset App Data
+        </button> */}
       </div>
 
       {/* Stats */}

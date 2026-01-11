@@ -15,6 +15,7 @@ https://drewshka-brogram.netlify.app/
 ## 📸 Preview
 
 > A clean, focused fitness app featuring:
+
 - Push / Pull / Legs workout views
 - Exercise tracking by training day
 - Minimal, distraction-free UI
@@ -32,6 +33,25 @@ https://drewshka-brogram.netlify.app/
 - 📱 Mobile-friendly design
 - 🧠 Simple, intuitive user experience
 
+## 📊 Progress Analytics
+
+- 📈 Interactive line charts for each exercise
+- 🏆 Tracks max weight per workout over time
+- ⭐ Highlights personal records (PRs)
+- 🔍 Filter analytics by:
+  - Exercise
+  - Training split (Push / Pull / Legs)
+  - Training cycle
+- 📆 Clean, readable date formatting
+- 🧠 Analytics persist across multiple 30-day cycles
+
+## 🔁 Training Cycles
+
+- 🔄 Reset program after 30 workouts
+- 🔢 Automatically starts a new training cycle
+- 📊 Previous cycles remain available in Analytics
+- 📈 Compare progress across cycles without losing history
+
 ---
 
 ## 🛠️ Built With
@@ -40,5 +60,3 @@ https://drewshka-brogram.netlify.app/
 - **Fanta CSS**
 - **JavaScript (ES6+)**
 - **HTML5**
-
-
