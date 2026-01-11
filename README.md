@@ -60,3 +60,5 @@ https://drewshka-brogram.netlify.app/
 - **Fanta CSS**
 - **JavaScript (ES6+)**
 - **HTML5**
+- **Recharts (data visualization)**
+- **LocalStorage (persistent state)**
